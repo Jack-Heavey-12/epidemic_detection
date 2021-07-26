@@ -48,18 +48,21 @@ def LinearProgram(graph, k, src):
 	for i in range(M):
 		for d in v_set[i].keys():
 			for u in v_set[i][d]:
-				x[str(i)+','+str(d)+','+str(u)] = m.addVar(vtype = GRB.CONTINUOUS, lb = 0.0, ub = 1.0, name = 'x['+str(i)+','+str(d)+','+str(u)']')
+				if u not in x:
+					#adding all of the nodes to the x dictionary - only need to add each node once despite all of the samples.
+					x[str(u)] = m.addVar(vtype = GRB.CONTINUOUS, lb = 0.0, ub = 1.0, name = 'x['+str(u)']')
+					#x[str(i)+','+str(d)+','+str(u)] = m.addVar(vtype = GRB.CONTINUOUS, lb = 0.0, ub = 1.0, name = 'x['+str(i)+','+str(d)+','+str(u)']')
 			y[str(i)+','+str(d)] = m.addVar(vtype = GRB.CONTINUOUS, lb = 0.0, ub = 1.0, name = 'y['+str(i)+','+str(d)+']')
 	m.update()
 
 	for i in range(M):
 		for d in v_set[i].keys():
-			m.addConstr(quicksum(x[str(i)+','+str(d)+','+str(u)] for u in v_set[i][d]) >= y[str(i)+','+str(d)], name='C1_sample='+str(i)+'_dist='+str(d))
+			m.addConstr(quicksum(x[str(u)] for u in v_set[i][d]) >= y[str(i)+','+str(d)], name='C1_sample='+str(i)+'_dist='+str(d))
 	m.update()
 
 	for i in range(M):
 		for d in v_set[i].keys():
-			m.addConstr(quicksum(x[str(i)+','+str(d)+','+str(u)] for u in v_set[i][d]) <= k, name='C2_sample='+str(i)+'_dist='+str(d))
+			m.addConstr(quicksum(x[str(u)] for u in v_set[i][d]) <= k, name='C2_sample='+str(i)+'_dist='+str(d))
 	m.update()
 
 
