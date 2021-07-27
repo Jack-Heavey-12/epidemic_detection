@@ -105,6 +105,11 @@ def sampling(num_samples, graph, p):
 		print(i)
 	return lst
 
+def rounding(x, n, big_n):
+	c = 2 + math.log(big_n, n+1)
+	d = c * (math.log(n+1) ** 2)
+	return min(1, x * d)
+
 #main function
 if __name__ == '__main__':
 	#dataset = sys.argv[1] #input the original dataset/graph name
