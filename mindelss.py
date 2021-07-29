@@ -148,14 +148,14 @@ if __name__ == '__main__':
 	#H = nx.gaussian_random_partition_graph(5000, 100, 100, .7, .1)
 	H = nx.read_adjlist('random_adj_list')
 	
-	arr = []
+	nodes = len(H.nodes()) #small n
 
 	k_arr = []
 	sum_arr = []
 
 	for i in range(10, 30, 5):
 		num_samples = 20
-		k = 'VALUE_FOR_K'
+		k = (i / 100) * nodes #VALUE_FOR_K
 		g = sampling(numSamples, H, p)
 
 		model, obj_val, x_dict = LinearProgram(G, k, 'LIST_OF_SOURCE_NODES')
@@ -175,22 +175,4 @@ if __name__ == '__main__':
 			textfile.write(str(k_arr)+','+str(sum_arr))
 		textfile.close()
 
-
-	'''for i in range(5, 500, 5):
-		numSamples = i
-		#arr = []
-		for j in range(0,1):
-			start_time = time.time()
-			G = sampling(numSamples, H, p)
-
-			m, x = LinearProgram(G, 'VALUE_FOR_K', 'LIST_OF_SOURCE_NODES')
-			tot_time = time.time() - start_time			
-			
-			arr.append(str(i)+','+str(tot_time)+'\n')
-
-		textfile = open('p_scaling_tot.csv', 'w')
-		textfile.write('Number of Samples,Execution Time\n')
-		for k in arr:
-			textfile.write(str(k))
-		textfile.close()'''
 	
