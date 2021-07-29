@@ -5,7 +5,9 @@ import math
 import numpy as np
 import time
 
+
 from collections import defaultdict
+
 
 
 
@@ -80,7 +82,7 @@ def LinearProgram(graph, k, src):
 	m.update()
 	m.optimize()
 
-	return m, m.objVal
+	return m, m.objVal, x
 
 
 #Function for sampling edges with probability p. Will return a list of sample graphs.
@@ -108,7 +110,15 @@ def sampling(num_samples, graph, p):
 def rounding(x, n, big_n):
 	c = 2 + math.log(big_n, n+1)
 	d = c * (math.log(n+1) ** 2)
-	return min(1, x * d)
+
+	limit = np.random.uniform(0,1)
+
+	if (x * d) > 1:
+		return 1
+	elif limit < (x * d):
+		return 1
+	else:
+		return 0
 
 #main function
 if __name__ == '__main__':
@@ -127,30 +137,46 @@ if __name__ == '__main__':
 	#numSamples = 20
 	
 	#Change probability of transmission here
+	#Used to determine the probability of a given edge being sampled
 	p = 0.02
 
 	#Change allowable infection rate here
 	alpha = 0.3
 
-	#for i in range(0, 1):
-		#print("Simulation ", i+1)
-		#graph, source = Simulation.generateDendograms(H, p, exps)
-		#G.append(graph)
-		#Took out path from the return on generateDendogram, so commenting out below
-		#Not sure where that return came from.
-		#paths.append(path)
-		#sources.append(source)
-	#for i in range(2):
-	#H = nx.read_adjlist('adj_list.txt')
-	#	G.append(H)
 
 	#H = nx.read_edgelist('lastfm_asia_edges.csv', delimiter=',')
 	#H = nx.gaussian_random_partition_graph(5000, 100, 100, .7, .1)
 	H = nx.read_adjlist('random_adj_list')
 	
-	arr = []	
+	arr = []
 
-	for i in range(5, 500, 5):
+	k_arr = []
+	sum_arr = []
+
+	for i in range(10, 30, 5):
+		num_samples = 20
+		k = 'VALUE_FOR_K'
+		g = sampling(numSamples, H, p)
+
+		model, obj_val, x_dict = LinearProgram(G, k, 'LIST_OF_SOURCE_NODES')
+
+		n = len(x_dict)
+		x_prime_dict = {}
+		for j in x_dict.keys():
+			x_prime_dict[j] = rounding(x_dict[j], n, num_samples)
+
+		k_arr.append(k)
+		sum_arr.append(sum(x_prime_dict.values()))
+
+
+		textfile = open('k_violation.csv', 'w')
+		textfile.write('Value of K,Number of Nodes Selected\n')
+		for val in range(len(k_arr)):
+			textfile.write(str(k_arr)+','+str(sum_arr))
+		textfile.close()
+
+
+	'''for i in range(5, 500, 5):
 		numSamples = i
 		#arr = []
 		for j in range(0,1):
@@ -166,5 +192,5 @@ if __name__ == '__main__':
 		textfile.write('Number of Samples,Execution Time\n')
 		for k in arr:
 			textfile.write(str(k))
-		textfile.close()
+		textfile.close()'''
 	
