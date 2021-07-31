@@ -14,15 +14,25 @@ from collections import defaultdict
 
 
 
-def LinearProgram(graph, k, src):
+def LinearProgram(graph, k):
 	#graph is a list of sampled subgraphs, generated before being fed in here.
 	#src is a list of infection sources. They are fixed for every sample, but there can be multiple.
+	#UPDATE - This is defined later
 	#k is a fixed variable
 
 	x = {} #defined as in the paper
 	y = {} #idefined as in the paper
 	M = len(graph) #number of sample graphs in list graph
 	nodes = graph[0].number_of_nodes()
+
+	src = []
+
+	for i in range(len(graph)):
+		#picks a random value out of the number of nodes
+		val = np.random.randrange(nodes)
+		#assigns that node as a source
+		src.append(graph[0].nodes()[i])
+
 
 	m = Model('MinDelSS')
 
@@ -160,10 +170,11 @@ if __name__ == '__main__':
 
 	for i in range(10, 30, 5):
 		num_samples = 20
-		k = np.floor((i / 100) * nodes)FOR_K
+		k = np.floor((i / 100) * nodes) #VALUE_FOR_K
 		g = sampling(numSamples, H, p)
 
-		model, obj_val, x_dict = LinearProgram(G, k, 'LIST_OF_SOURCE_NODES')
+		#UPDATE - Deleted LIST_OF_SOURCES as an argument, defined in function randomly.
+		model, obj_val, x_dict = LinearProgram(G, k)
 
 		n = len(x_dict)
 		x_prime_dict = {}
