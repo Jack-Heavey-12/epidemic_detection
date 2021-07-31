@@ -144,9 +144,14 @@ if __name__ == '__main__':
 	alpha = 0.3
 
 
-	#H = nx.read_edgelist('lastfm_asia_edges.csv', delimiter=',')
-	#H = nx.gaussian_random_partition_graph(5000, 100, 100, .7, .1)
-	H = nx.read_adjlist('random_adj_list')
+
+	#So this graph is only 75 nodes, 1138 edges.
+	df = pd.read_csv('hospital_contacts', sep='\t', header=None)
+	df.columns = ['time', 'e1', 'e2', 'lab_1', 'lab_2']
+	H = nx.from_pandas_edgelist(df, 'e1', 'e2')
+
+	#This graph is 2500 nodes, 9388 edges, but is randomly constructed
+	#H = nx.read_adjlist('random_adj_list')
 	
 	nodes = len(H.nodes()) #small n
 
@@ -155,7 +160,7 @@ if __name__ == '__main__':
 
 	for i in range(10, 30, 5):
 		num_samples = 20
-		k = (i / 100) * nodes #VALUE_FOR_K
+		k = np.floor((i / 100) * nodes)FOR_K
 		g = sampling(numSamples, H, p)
 
 		model, obj_val, x_dict = LinearProgram(G, k, 'LIST_OF_SOURCE_NODES')
