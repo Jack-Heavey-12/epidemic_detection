@@ -4,6 +4,7 @@ from gurobipy import *
 import math
 import numpy as np
 import time
+import pandas as pd
 
 
 from collections import defaultdict
@@ -23,15 +24,16 @@ def LinearProgram(graph, k):
 	x = {} #defined as in the paper
 	y = {} #idefined as in the paper
 	M = len(graph) #number of sample graphs in list graph
+	print(M)
 	nodes = graph[0].number_of_nodes()
 
 	src = []
 
 	for i in range(len(graph)):
 		#picks a random value out of the number of nodes
-		val = np.random.randrange(nodes)
+		val = np.random.randint(0, nodes-1)
 		#assigns that node as a source
-		src.append(graph[0].nodes()[i])
+		src.append(list(graph[0].nodes())[val])
 
 
 	m = Model('MinDelSS')
@@ -42,7 +44,8 @@ def LinearProgram(graph, k):
 	#The way this is constructed, 
 	v_set = {}
 	for i in range(M):
-		v_set[i] = defaultdict([])
+		empt_lst = lambda:[]
+		v_set[i] = defaultdict(empt_lst)
 		graph[i].add_node('meta')
 		for j in src:
 			graph[i].add_edge('meta', j)
@@ -53,8 +56,10 @@ def LinearProgram(graph, k):
 				#paths[u] returns distance d.
 				v_set[i][paths[u]].append(u)
 				#returns n+1 as the distance if there is an error.
-			except nx.exception.NetworkXNoPath:
+			except KeyError:
 				v_set[i][nodes + 1].append(u)
+		del v_set[i][0]
+		graph[i].remove_node('meta')
 
 
 	for i in range(M):
@@ -62,7 +67,7 @@ def LinearProgram(graph, k):
 			for u in v_set[i][d]:
 				if u not in x:
 					#adding all of the nodes to the x dictionary - only need to add each node once despite all of the samples.
-					x[str(u)] = m.addVar(vtype = GRB.CONTINUOUS, lb = 0.0, ub = 1.0, name = 'x['+str(u)']')
+					x[str(u)] = m.addVar(vtype = GRB.CONTINUOUS, lb = 0.0, ub = 1.0, name = 'x['+str(u)+']')
 					#x[str(i)+','+str(d)+','+str(u)] = m.addVar(vtype = GRB.CONTINUOUS, lb = 0.0, ub = 1.0, name = 'x['+str(i)+','+str(d)+','+str(u)']')
 			y[str(i)+','+str(d)] = m.addVar(vtype = GRB.CONTINUOUS, lb = 0.0, ub = 1.0, name = 'y['+str(i)+','+str(d)+']')
 	m.update()
@@ -88,9 +93,11 @@ def LinearProgram(graph, k):
 
 	#Objective Function
 	#First fraction is 1/N, need to somehow sum over all d values as well, think that is done in the comprehension right now but maybe need more clarity there
-	m.setObjective(1/range(M) * quicksum((y[str(i)+','+str(d)] * d) for i in range(M) for d in v_set[i].keys()), GRB.MINIMIZE)
+	m.setObjective(1/M * quicksum((y[str(i)+','+str(d)] * d) for i in range(M) for d in v_set[i].keys()), GRB.MINIMIZE)
 	m.update()
 	m.optimize()
+
+	print(x)
 
 	return m, m.objVal, x
 
@@ -135,7 +142,7 @@ if __name__ == '__main__':
 	#dataset = sys.argv[1] #input the original dataset/graph name
 	outputfile = 'mindelss_output' #input the output file name
 	
-	G = []
+	#G = []
 	paths = []
 	levels = [] 
 	sources = []
@@ -148,7 +155,7 @@ if __name__ == '__main__':
 	
 	#Change probability of transmission here
 	#Used to determine the probability of a given edge being sampled
-	p = 0.02
+	p = 0.2
 
 	#Change allowable infection rate here
 	alpha = 0.3
@@ -168,10 +175,10 @@ if __name__ == '__main__':
 	k_arr = []
 	sum_arr = []
 
-	for i in range(10, 30, 5):
-		num_samples = 20
+	for i in range(5, 55, 5):
+		num_samples = 5000
 		k = np.floor((i / 100) * nodes) #VALUE_FOR_K
-		g = sampling(numSamples, H, p)
+		G = sampling(num_samples, H, p)
 
 		#UPDATE - Deleted LIST_OF_SOURCES as an argument, defined in function randomly.
 		model, obj_val, x_dict = LinearProgram(G, k)
@@ -179,16 +186,16 @@ if __name__ == '__main__':
 		n = len(x_dict)
 		x_prime_dict = {}
 		for j in x_dict.keys():
-			x_prime_dict[j] = rounding(x_dict[j], n, num_samples)
+			x_prime_dict[j] = rounding(x_dict[j].x, n, num_samples)
 
 		k_arr.append(k)
 		sum_arr.append(sum(x_prime_dict.values()))
 
 
 		textfile = open('k_violation.csv', 'w')
-		textfile.write('Value of K,Number of Nodes Selected\n')
+		textfile.write('Value of K,Number of Nodes Selected,objVal\n')
 		for val in range(len(k_arr)):
-			textfile.write(str(k_arr)+','+str(sum_arr))
+			textfile.write(str(k_arr[val])+','+str(sum_arr[val])+','+str(obj_val)+'\n')
 		textfile.close()
 
 	
