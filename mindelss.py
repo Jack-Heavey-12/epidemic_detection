@@ -9,6 +9,9 @@ import pandas as pd
 
 from collections import defaultdict
 
+from matplotlib import pyplot as plt
+
+
 
 
 
@@ -137,6 +140,26 @@ def rounding(x, n, big_n):
 	else:
 		return 0
 
+def produce_plot(input_name, output_string):
+	df = pd.read_csv(input_name)
+
+	df['Percent'] = df['Number of Nodes Selected'] / df['Value of K']
+
+	fig = plt.plot(df['Value of K'], df['Value of K'], color='r')
+
+	plt.plot(df['Value of K'], df['Number of Nodes Selected'], color='b')
+	plt.legend(['Value of Budget K', 'Size of Selected Set S_r'])
+	plt.title('Violation of Budget Constraints')
+
+	plt.savefig(output_string + '.png')
+	plt.clf()
+
+	fig2 = plt.plot(df['K'], df['Percent'])
+	plt.title('Violation of K as a Percentage of K')
+	plt.savefig(output_string +'_percent.png')
+	plt.clf()
+
+
 #main function
 if __name__ == '__main__':
 	#dataset = sys.argv[1] #input the original dataset/graph name
@@ -197,5 +220,9 @@ if __name__ == '__main__':
 		for val in range(len(k_arr)):
 			textfile.write(str(k_arr[val])+','+str(sum_arr[val])+','+str(obj_val)+'\n')
 		textfile.close()
+
+		#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
+		produce_plot('k_violation.csv', 'example')
+
 
 	
