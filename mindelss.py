@@ -154,7 +154,7 @@ def produce_plot(input_name, output_string):
 	plt.savefig(output_string + '.png')
 	plt.clf()
 
-	fig2 = plt.plot(df['K'], df['Percent'])
+	fig2 = plt.plot(df['Value of K'], df['Percent'])
 	plt.title('Violation of K as a Percentage of K')
 	plt.savefig(output_string +'_percent.png')
 	plt.clf()
