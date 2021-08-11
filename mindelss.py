@@ -259,7 +259,7 @@ if __name__ == '__main__':
 		textfile = open('k_violation.csv', 'w')
 		textfile.write('Value of K,Number of Nodes Selected,objVal,new_objVal,Number of Infections (mean)\n')
 		for val in range(len(k_arr)):
-			textfile.write(str(k_arr[val])+','+str(x_prime_dict_arr[val])+','+str(obj_val[val])+
+			textfile.write(str(k_arr[val])+','+str(x_prime_dict_arr[val])+','+str(obj_val_lst[val])+
 				','+str(new_obj_val_lst[val])+','+str(inf_list_lst[val])+'\n')
 		textfile.close()
 
