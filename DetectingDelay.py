@@ -11,6 +11,7 @@ import time
 import random
 from collections import defaultdict
 
+#Function for randomly selecting k infection sources for a given sample graph
 def RandomInfectionSources(graph, k):
     InfectedNodes = []
     for node in graph.nodes():
@@ -23,12 +24,14 @@ def RandomInfectionSources(graph, k):
             break
     return InfectedNodes
 
+#Function for calculating the expected delay for the system
+#The function takes as input a simulation graph, a set of nodes of interest S, and a list of infection sources
 def DetectDelay(graph, S, Nodes):
-    expected_delay = 1000
-    #starting from any of the lists of infected nodes
+    expected_delay = 100000
+    #checking distance from any of the given infection sources
     for node in Nodes:
         V_id = nx.shortest_path_length(graph, node)
-        #if any of our monitored nodes are found within a delay shorter than our current shortest delay lower the expected delay
+        #checking if any of our monitored nodes are found within a delay shorter than our current shortest delay lower the expected delay
         for key in list(V_id.keys()):
             if key in S and V_id[key] < expected_delay:
                 expected_delay = V_id[key]
@@ -96,22 +99,27 @@ if __name__ == '__main__':
 
 	solutions = []
 	SimulationSources = []
+
+	#formatting and generating the inputs for the Delay Detection function
 	for simulation in g:
 		nodess = RandomSolution(simulation, 2)
 		source = RandomInfectionSources(simulation, 1)
 		solutions.append(nodess)
 		sample = (simulation, source)
 		SimulationSources.append(sample)
+
+	
 	print("solutions: ", solutions, "\n")
 	print("Simulation and Sources: " ,SimulationSources, "\n")
 	ListOfExpectedDelays = []
 
+	#Determining the delay 
 	for solution in solutions:
 		for SimandSource in SimulationSources:
 			x = DetectDelay(SimandSource[0], solution, SimandSource[1])
 			ListOfExpectedDelays.append(x)
 
 	#print(ListOfExpectedDelays)
-	expected_delay = np.mean(ListOfExpectedDelays)
+	expected_delay = np.mean(ListOfExpectedDelays)/(len(solutions))
 	print("Delay Calculated")
 	print("Expected delay is: ", expected_delay)
