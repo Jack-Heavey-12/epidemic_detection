@@ -11,10 +11,11 @@ from operator import itemgetter
 
 def RandomSolution(graph, k):
     S = []
-    for node in graph.nodes:
-        if len(S) <= k:
+    for node in graph.nodes():
+        if len(S) < k:
             p = random.uniform(0,1)
             if p > 0.25:
+                #print(node)
                 S.append(node)
         else:
             break
@@ -41,7 +42,7 @@ def CentralitySolution(graph, k):
 
 def PageRankSolution(graph, k):
     S = []
-    PageRank = nx.pagerank(G)
+    PageRank = nx.pagerank(graph)
     PRNodes = []
     for node in PageRank.keys():
         pair = (node, PageRank[node])
