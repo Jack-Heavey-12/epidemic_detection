@@ -122,7 +122,7 @@ def LinearProgram(graph, k):
 	#producing the number of infections here by saving the length of the connected component to the selected source
 	infection_list = []
 	for i in range(M):
-		infection_list.append(len(nx.nodes_connected_component(graph[i], src[i])))
+		infection_list.append(len(nx.node_connected_component(graph[i], src[i])))
 
 
 
