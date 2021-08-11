@@ -216,7 +216,7 @@ if __name__ == '__main__':
 	
 	#Change probability of transmission here
 	#Used to determine the probability of a given edge being sampled
-	p = 0.2
+	p = 0.1
 
 	#Change allowable infection rate here
 	alpha = 0.3
