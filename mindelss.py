@@ -130,8 +130,8 @@ def LinearProgram(graph, k):
 	#first, create a smaller set which has all of the nodes where they are 
 	s_r = set()
 	for i in list(x_prime_dict.keys()):
-		if x_prime_dict[i] == 1
-		s_r.add(i)
+		if x_prime_dict[i] == 1:
+			s_r.add(i)
 
 
 	obj_vals = []
