@@ -14,7 +14,18 @@ from matplotlib import pyplot as plt
 
 
 
+def rounding(x, n, big_n):
+	c = 2 + math.log(big_n, n+1)
+	d = c * (math.log(n+1) ** 2)
 
+	limit = np.random.uniform(0,1)
+
+	if (x * d) > 1:
+		return 1
+	elif limit < (x * d):
+		return 1
+	else:
+		return 0
 
 
 
@@ -27,16 +38,18 @@ def LinearProgram(graph, k):
 	x = {} #defined as in the paper
 	y = {} #idefined as in the paper
 	M = len(graph) #number of sample graphs in list graph
-	print(M)
 	nodes = graph[0].number_of_nodes()
 
 	src = []
 
+	#could condense this, but want to make sure that it's the same list so it truly is random
+	#could also be faster I suppose at the cost of memory
+	lst_of_nodes = list(graph[0].nodes())
 	for i in range(len(graph)):
 		#picks a random value out of the number of nodes
 		val = np.random.randint(0, nodes-1)
 		#assigns that node as a source
-		src.append(list(graph[0].nodes())[val])
+		src.append(lst_of_nodes[val])
 
 
 	m = Model('MinDelSS')
@@ -91,18 +104,54 @@ def LinearProgram(graph, k):
 
 	m.update()
 
-
-
-
 	#Objective Function
 	#First fraction is 1/N, need to somehow sum over all d values as well, think that is done in the comprehension right now but maybe need more clarity there
 	m.setObjective(1/M * quicksum((y[str(i)+','+str(d)] * d) for i in range(M) for d in v_set[i].keys()), GRB.MINIMIZE)
 	m.update()
 	m.optimize()
 
-	print(x)
 
-	return m, m.objVal, x
+
+	#x is the dictionary where the values of x are stored, producing the rounding here
+	n = len(x)
+	x_prime_dict = {}
+	for j in x.keys():
+		x_prime_dict[j] = rounding(x[j].x, n, num_samples)
+
+
+	#producing the number of infections here by saving the length of the connected component to the selected source
+	infection_list = []
+	for i in range(M):
+		infection_list.append(len(nx.nodes_connected_component(graph[i], src[i])))
+
+
+
+	#Want to calculate the objective value now for the rounded values
+	#first, create a smaller set which has all of the nodes where they are 
+	s_r = set()
+	for i in list(x_prime_dict.keys()):
+		if x_prime_dict[i] == 1
+		s_r.add(i)
+
+
+	obj_vals = []
+	for i in range(M):
+		paths = nx.shortest_path_length(graph[i], source=src[i])
+		shortest = nodes + 1
+		for u in list(s_r):
+			try:
+				if paths[u] < shortest:
+					shortest = paths[u]
+			except KeyError:
+				continue
+		obj_vals.append(shortest)
+
+
+
+	#Return stuff here, so want to calculate everything first so that we can return everything with just one function call
+
+
+	return m, m.objVal, x, x_prime_dict, np.mean(infection_list), np.mean(obj_vals)
 
 
 #Function for sampling edges with probability p. Will return a list of sample graphs.
@@ -127,18 +176,7 @@ def sampling(num_samples, graph, p):
 		print(i)
 	return lst
 
-def rounding(x, n, big_n):
-	c = 2 + math.log(big_n, n+1)
-	d = c * (math.log(n+1) ** 2)
 
-	limit = np.random.uniform(0,1)
-
-	if (x * d) > 1:
-		return 1
-	elif limit < (x * d):
-		return 1
-	else:
-		return 0
 
 def produce_plot(input_name, output_string):
 	df = pd.read_csv(input_name)
@@ -196,29 +234,33 @@ if __name__ == '__main__':
 	nodes = len(H.nodes()) #small n
 
 	k_arr = []
-	sum_arr = []
+	obj_val_lst = []
+	x_prime_dict_arr = []
+	inf_list_lst = []
+	new_obj_val_lst = []
 
-	for i in range(5, 55, 5):
+	for i in range(5, 60, 5):
 		num_samples = 5000
 		k = np.floor((i / 100) * nodes) #VALUE_FOR_K
 		G = sampling(num_samples, H, p)
 
 		#UPDATE - Deleted LIST_OF_SOURCES as an argument, defined in function randomly.
-		model, obj_val, x_dict = LinearProgram(G, k)
+		model, obj_val, x_dict, x_prime_dict, inf_list, new_obj_val = LinearProgram(G, k)
 
-		n = len(x_dict)
-		x_prime_dict = {}
-		for j in x_dict.keys():
-			x_prime_dict[j] = rounding(x_dict[j].x, n, num_samples)
 
+		#TODO - NEED TO EVALUATE THIS WRITE STATEMENT BELOW HERE
 		k_arr.append(k)
-		sum_arr.append(sum(x_prime_dict.values()))
+		x_prime_dict_arr.append(sum(x_prime_dict.values()))
+		inf_list_lst.append(inf_list)
+		new_obj_val_lst.append(new_obj_val)
+		obj_val_lst.append(obj_val)
 
 
 		textfile = open('k_violation.csv', 'w')
-		textfile.write('Value of K,Number of Nodes Selected,objVal\n')
+		textfile.write('Value of K,Number of Nodes Selected,objVal,new_objVal,Number of Infections (mean)\n')
 		for val in range(len(k_arr)):
-			textfile.write(str(k_arr[val])+','+str(sum_arr[val])+','+str(obj_val)+'\n')
+			textfile.write(str(k_arr[val])+','+str(x_prime_dict_arr[val])+','+str(obj_val[val])+
+				','+str(new_obj_val_lst[val])+','+str(inf_list_lst[val])+'\n')
 		textfile.close()
 
 		#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
