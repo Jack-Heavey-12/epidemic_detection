@@ -47,11 +47,11 @@ def LinearProgram(graph, k):
 	lst_of_nodes = list(graph[0].nodes())
 
 	#makes the same source across all samples
-	val = np.random.randint(0, nodes-1)
+	#val = np.random.randint(0, nodes-1)
 	for i in range(len(graph)):
 		#picks a random value out of the number of nodes
 		#Uncomment this line for a different source for every sample
-		#val = np.random.randint(0, nodes-1)
+		val = np.random.randint(0, nodes-1)
 		#assigns that node as a source
 		src.append(lst_of_nodes[val])
 
@@ -131,7 +131,7 @@ def LinearProgram(graph, k):
 
 
 	#Want to calculate the objective value now for the rounded values
-	#first, create a smaller set which has all of the nodes where they are 
+	#first, create a smaller set which has all of the nodes where they are in s_r
 	s_r = set()
 	for i in list(x_prime_dict.keys()):
 		if x_prime_dict[i] == 1:
@@ -148,7 +148,7 @@ def LinearProgram(graph, k):
 					shortest = paths[u]
 			except KeyError:
 				continue
-		obj_vals.append(shortest)
+		obj_vals.append(shortest + 1)
 
 
 
@@ -228,16 +228,17 @@ if __name__ == '__main__':
 
 
 	#So this graph is only 75 nodes, 1138 edges.
-	df = pd.read_csv('hospital_contacts', sep='\t', header=None)
-	df.columns = ['time', 'e1', 'e2', 'lab_1', 'lab_2']
-	H = nx.from_pandas_edgelist(df, 'e1', 'e2')
+	#df = pd.read_csv('hospital_contacts', sep='\t', header=None)
+	#df.columns = ['time', 'e1', 'e2', 'lab_1', 'lab_2']
+	#H = nx.from_pandas_edgelist(df, 'e1', 'e2')
 
 	#This graph is 2500 nodes, 9388 edges, but is randomly constructed
 	#H = nx.read_adjlist('random_adj_list')
 
 	#theoretical physics collaboration network
-	#H_prime = nx.read_adjlist('arxiv_collab_network.txt')
-	#H = H_prime.subgraph(max(nx.connected_components(H_prime))).copy()
+	H_prime = nx.read_adjlist('arxiv_collab_network.txt')
+	H = H_prime.subgraph(max(nx.connected_components(H_prime))).copy()
+	del H_prime
 	
 	nodes = len(H.nodes()) #small n
 
@@ -253,7 +254,7 @@ if __name__ == '__main__':
 	for i in prob_lst:
 		num_samples = 1000
 		#k = np.floor((i / 100) * nodes) #VALUE_FOR_K
-		k = np.floor(.15 * nodes)
+		k = np.floor(.01 * nodes)
 		p = i
 		G = sampling(num_samples, H, p)
 
@@ -270,7 +271,7 @@ if __name__ == '__main__':
 
 
 		textfile = open('p_adjustment.csv', 'w')
-		textfile.write('Value of infection_rate_p,Number of Nodes Selected,objVal,new_objVal,Number of Infections (mean)\n')
+		textfile.write('Value of infection_rate_p,Rounded X Values,objVal,new_objVal,Number of Infections (mean)\n')
 		for val in range(len(k_arr)):
 			textfile.write(str(k_arr[val])+','+str(x_prime_dict_arr[val])+','+str(obj_val_lst[val])+
 				','+str(new_obj_val_lst[val])+','+str(inf_list_lst[val])+'\n')
