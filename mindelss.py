@@ -45,9 +45,13 @@ def LinearProgram(graph, k):
 	#could condense this, but want to make sure that it's the same list so it truly is random
 	#could also be faster I suppose at the cost of memory
 	lst_of_nodes = list(graph[0].nodes())
+
+	#makes the same source across all samples
+	val = np.random.randint(0, nodes-1)
 	for i in range(len(graph)):
 		#picks a random value out of the number of nodes
-		val = np.random.randint(0, nodes-1)
+		#Uncomment this line for a different source for every sample
+		#val = np.random.randint(0, nodes-1)
 		#assigns that node as a source
 		src.append(lst_of_nodes[val])
 
@@ -230,6 +234,10 @@ if __name__ == '__main__':
 
 	#This graph is 2500 nodes, 9388 edges, but is randomly constructed
 	#H = nx.read_adjlist('random_adj_list')
+
+	#theoretical physics collaboration network
+	#H_prime = nx.read_adjlist('arxiv_collab_network.txt')
+	#H = H_prime.subgraph(max(nx.connected_components(H_prime))).copy()
 	
 	nodes = len(H.nodes()) #small n
 
@@ -239,9 +247,14 @@ if __name__ == '__main__':
 	inf_list_lst = []
 	new_obj_val_lst = []
 
-	for i in range(5, 60, 5):
+	prob_lst = [.001, .005, .01, .03, .05, .1]
+
+	#for i in range(5, 60, 5):
+	for i in prob_lst:
 		num_samples = 5000
-		k = np.floor((i / 100) * nodes) #VALUE_FOR_K
+		#k = np.floor((i / 100) * nodes) #VALUE_FOR_K
+		k = .15
+		p = i
 		G = sampling(num_samples, H, p)
 
 		#UPDATE - Deleted LIST_OF_SOURCES as an argument, defined in function randomly.
@@ -249,22 +262,22 @@ if __name__ == '__main__':
 
 
 		#TODO - NEED TO EVALUATE THIS WRITE STATEMENT BELOW HERE
-		k_arr.append(k)
+		k_arr.append(p)
 		x_prime_dict_arr.append(sum(x_prime_dict.values()))
 		inf_list_lst.append(inf_list)
 		new_obj_val_lst.append(new_obj_val)
 		obj_val_lst.append(obj_val)
 
 
-		textfile = open('k_violation.csv', 'w')
-		textfile.write('Value of K,Number of Nodes Selected,objVal,new_objVal,Number of Infections (mean)\n')
+		textfile = open('p_adjustment.csv', 'w')
+		textfile.write('Value of infection_rate_p,Number of Nodes Selected,objVal,new_objVal,Number of Infections (mean)\n')
 		for val in range(len(k_arr)):
 			textfile.write(str(k_arr[val])+','+str(x_prime_dict_arr[val])+','+str(obj_val_lst[val])+
 				','+str(new_obj_val_lst[val])+','+str(inf_list_lst[val])+'\n')
 		textfile.close()
 
 		#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
-		produce_plot('k_violation.csv', 'example')
+		#produce_plot('k_violation.csv', 'example')
 
 
 	
