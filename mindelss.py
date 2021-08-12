@@ -251,9 +251,9 @@ if __name__ == '__main__':
 
 	#for i in range(5, 60, 5):
 	for i in prob_lst:
-		num_samples = 5000
+		num_samples = 1000
 		#k = np.floor((i / 100) * nodes) #VALUE_FOR_K
-		k = .15
+		k = np.floor(.15 * nodes)
 		p = i
 		G = sampling(num_samples, H, p)
 
