@@ -236,6 +236,7 @@ if __name__ == '__main__':
 	#H = nx.read_adjlist('random_adj_list')
 
 	#theoretical physics collaboration network
+	#8638 nodes, 24827 edges
 	H_prime = nx.read_adjlist('arxiv_collab_network.txt')
 	H = H_prime.subgraph(max(nx.connected_components(H_prime))).copy()
 	del H_prime
@@ -248,7 +249,7 @@ if __name__ == '__main__':
 	inf_list_lst = []
 	new_obj_val_lst = []
 
-	prob_lst = [.001, .005, .01, .03, .05, .1]
+	prob_lst = [.001, .005, .01, .03, .05, .1, .15, .2, .25, .3, .35, .4]
 
 	#for i in range(5, 60, 5):
 	for i in prob_lst:
@@ -262,7 +263,7 @@ if __name__ == '__main__':
 		model, obj_val, x_dict, x_prime_dict, inf_list, new_obj_val = LinearProgram(G, k)
 
 
-		#TODO - NEED TO EVALUATE THIS WRITE STATEMENT BELOW HERE
+		#NEED TO EVALUATE THIS WRITE STATEMENT BELOW HERE
 		k_arr.append(p)
 		x_prime_dict_arr.append(sum(x_prime_dict.values()))
 		inf_list_lst.append(inf_list)
