@@ -187,11 +187,11 @@ def sampling(num_samples, graph, p):
 def produce_plot(input_name, output_string):
 	df = pd.read_csv(input_name)
 
-	df['Percent'] = df['Number of Nodes Selected'] / df['Value of K']
+	df['Percent'] = df['Rounded X Value'] / df['Value of K']
 
 	fig = plt.plot(df['Value of K'], df['Value of K'], color='r')
 
-	plt.plot(df['Value of K'], df['Number of Nodes Selected'], color='b')
+	plt.plot(df['Value of K'], df['Rounded X Value'], color='b')
 	plt.legend(['Value of Budget K', 'Size of Selected Set S_r'])
 	plt.title('Violation of Budget Constraints')
 
@@ -274,21 +274,15 @@ if __name__ == '__main__':
 
 
 		textfile = open('k_values_2.csv', 'w')
-		textfile.write('Value of K,Rounded X Values,objVal,new_objVal,Number of Infections (mean)\n')
+		textfile.write('Value of K,Rounded X Value,objVal,new_objVal,Number of Infections (mean)\n')
 		for val in range(len(k_arr)):
 			textfile.write(str(k_arr[val])+','+str(x_prime_dict_arr[val])+','+str(obj_val_lst[val])+
 				','+str(new_obj_val_lst[val])+','+str(inf_list_lst[val])+'\n')
 		textfile.close()
 
 
-		y_vals = open('y_vals.csv', 'w')
-		y_vals.write('Var_name,Optimized_Value\n')
-		for val in list(y_vals.keys()):
-			y_vals.write(str(val)+','+str(y_vals[val].x+'\n'))
-		y_vals.close()
-
 		#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
-		#produce_plot('k_violation.csv', 'example')
+		produce_plot('k_values_2.csv', 'example')
 
 
 	
