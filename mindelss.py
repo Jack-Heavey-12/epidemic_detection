@@ -97,10 +97,12 @@ def LinearProgram(graph, k):
 			m.addConstr(quicksum(x[str(u)] for u in v_set[i][d]) >= y[str(i)+','+str(d)], name='C1_sample='+str(i)+'_dist='+str(d))
 	m.update()
 
-	for i in range(M):
+	'''for i in range(M):
 		for d in v_set[i].keys():
 			m.addConstr(quicksum(x[str(u)] for u in v_set[i][d]) <= k, name='C2_sample='+str(i)+'_dist='+str(d))
-	m.update()
+	m.update()'''
+
+	m.addConstr(quicksum(x[str(u)] for u in list(x.keys())) <= k, name='C2_budget')
 
 
 	for i in range(M):
@@ -155,7 +157,7 @@ def LinearProgram(graph, k):
 	#Return stuff here, so want to calculate everything first so that we can return everything with just one function call
 
 
-	return m, m.objVal, x, x_prime_dict, np.mean(infection_list), np.mean(obj_vals)
+	return m, m.objVal, x, x_prime_dict, np.mean(infection_list), np.mean(obj_vals), y
 
 
 #Function for sampling edges with probability p. Will return a list of sample graphs.
@@ -220,7 +222,7 @@ if __name__ == '__main__':
 	
 	#Change probability of transmission here
 	#Used to determine the probability of a given edge being sampled
-	p = 0.1
+	p = 0.2
 
 	#Change allowable infection rate here
 	alpha = 0.3
@@ -249,34 +251,41 @@ if __name__ == '__main__':
 	inf_list_lst = []
 	new_obj_val_lst = []
 
-	prob_lst = [.001, .005, .01, .03, .05, .1, .15, .2, .25, .3, .35, .4]
+	#prob_lst = [.001, .005, .01, .03, .05, .1, .15, .2, .25, .3, .35, .4]
 
-	#for i in range(5, 60, 5):
-	for i in prob_lst:
-		num_samples = 1000
-		#k = np.floor((i / 100) * nodes) #VALUE_FOR_K
-		k = np.floor(.01 * nodes)
-		p = i
+	for i in range(5, 55, 5):
+	#for i in prob_lst:
+		num_samples = 2500
+		k = i #VALUE_FOR_K
+		#k = np.floor(.01 * nodes)
+		#p = i
 		G = sampling(num_samples, H, p)
 
 		#UPDATE - Deleted LIST_OF_SOURCES as an argument, defined in function randomly.
-		model, obj_val, x_dict, x_prime_dict, inf_list, new_obj_val = LinearProgram(G, k)
+		model, obj_val, x_dict, x_prime_dict, inf_list, new_obj_val, y_vals = LinearProgram(G, k)
 
 
 		#NEED TO EVALUATE THIS WRITE STATEMENT BELOW HERE
-		k_arr.append(p)
+		k_arr.append(k)
 		x_prime_dict_arr.append(sum(x_prime_dict.values()))
 		inf_list_lst.append(inf_list)
 		new_obj_val_lst.append(new_obj_val)
 		obj_val_lst.append(obj_val)
 
 
-		textfile = open('p_adjustment.csv', 'w')
-		textfile.write('Value of infection_rate_p,Rounded X Values,objVal,new_objVal,Number of Infections (mean)\n')
+		textfile = open('k_values_2.csv', 'w')
+		textfile.write('Value of K,Rounded X Values,objVal,new_objVal,Number of Infections (mean)\n')
 		for val in range(len(k_arr)):
 			textfile.write(str(k_arr[val])+','+str(x_prime_dict_arr[val])+','+str(obj_val_lst[val])+
 				','+str(new_obj_val_lst[val])+','+str(inf_list_lst[val])+'\n')
 		textfile.close()
+
+
+		y_vals = open('y_vals.csv', 'w')
+		y_vals.write('Var_name,Optimized_Value\n')
+		for val in list(y_vals.keys()):
+			y_vals.write(str(val)+','+str(y_vals[val].x+'\n'))
+		y_vals.close()
 
 		#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
 		#produce_plot('k_violation.csv', 'example')
