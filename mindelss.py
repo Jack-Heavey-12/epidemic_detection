@@ -255,7 +255,7 @@ if __name__ == '__main__':
 
 	for i in range(5, 55, 5):
 	#for i in prob_lst:
-		num_samples = 2500
+		num_samples = 1000
 		k = i #VALUE_FOR_K
 		#k = np.floor(.01 * nodes)
 		#p = i
@@ -280,6 +280,18 @@ if __name__ == '__main__':
 				','+str(new_obj_val_lst[val])+','+str(inf_list_lst[val])+'\n')
 		textfile.close()
 
+
+		y_file = open('y_vals.csv', 'w')
+		y_file.write('Var_name,Optimized_Value\n')
+		for val in list(y_vals.keys()):
+			y_file.write(str(val)+','+str(y_vals[val].x)+'\n')
+		y_file.close()
+
+		x_vals = open('x_vals.csv', 'w')
+		y_file.write('Var_name,Optimized_Value\n')
+		for val in list(x_dict.keys()):
+			x_file.write('x['+str(val)+'],'+str(x_dict[val].x)+'\n')
+		x_file.close()
 
 		#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
 		produce_plot('k_values_2.csv', 'example')
