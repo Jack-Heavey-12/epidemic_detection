@@ -20,12 +20,11 @@ def rounding(x, n, big_n):
 
 	limit = np.random.uniform(0,1)
 
-	if (x * d) > 1:
+	#just a slightly cleaner way of doing the math, the other way should have still worked, though
+	if limit <= np,min([1, x*d]):
 		return 1
-	elif limit < (x * d):
-		return 1
-	else:
-		return 0
+	return 0
+
 
 
 
