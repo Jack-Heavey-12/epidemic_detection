@@ -67,8 +67,7 @@ def LinearProgram(graph, k):
 		empt_lst = lambda:[]
 		v_set[i] = defaultdict(empt_lst)
 		graph[i].add_node('meta')
-		for j in src:
-			graph[i].add_edge('meta', j)
+		graph[i].add_edge('meta', src[i])
 		#This will return 1 for source nodes and the distance to the rest of them
 		paths = nx.shortest_path_length(graph[i], source='meta')
 		for u in graph[i]:
@@ -157,7 +156,7 @@ def LinearProgram(graph, k):
 	#Return stuff here, so want to calculate everything first so that we can return everything with just one function call
 
 
-	return m, m.objVal, x, x_prime_dict, np.mean(infection_list), np.mean(obj_vals), y
+	return m, m.objVal, x, x_prime_dict, np.mean(infection_list), np.mean(obj_vals), y, src, v_set
 
 
 #Function for sampling edges with probability p. Will return a list of sample graphs.
@@ -255,14 +254,14 @@ if __name__ == '__main__':
 
 	for i in range(5, 55, 5):
 	#for i in prob_lst:
-		num_samples = 1000
-		k = i #VALUE_FOR_K
-		#k = np.floor(.01 * nodes)
+		num_samples = 2500
+		#k = i #VALUE_FOR_K
+		k = np.floor(i * nodes)
 		#p = i
 		G = sampling(num_samples, H, p)
 
 		#UPDATE - Deleted LIST_OF_SOURCES as an argument, defined in function randomly.
-		model, obj_val, x_dict, x_prime_dict, inf_list, new_obj_val, y_vals = LinearProgram(G, k)
+		model, obj_val, x_dict, x_prime_dict, inf_list, new_obj_val, y_vals, src, v_set = LinearProgram(G, k)
 
 
 		#NEED TO EVALUATE THIS WRITE STATEMENT BELOW HERE
@@ -281,17 +280,27 @@ if __name__ == '__main__':
 		textfile.close()
 
 
-		y_file = open('y_vals.csv', 'w')
+		'''y_file = open('y_vals.csv', 'w')
 		y_file.write('Var_name,Optimized_Value\n')
 		for val in list(y_vals.keys()):
 			y_file.write(str(val)+','+str(y_vals[val].x)+'\n')
-		y_file.close()
+		y_file.close()'''
 
-		x_vals = open('x_vals.csv', 'w')
-		y_file.write('Var_name,Optimized_Value\n')
+		'''x_vals = open('x_vals.csv', 'w')
+		x_vals.write('Var_name,Optimized_Value\n')
 		for val in list(x_dict.keys()):
-			x_file.write('x['+str(val)+'],'+str(x_dict[val].x)+'\n')
-		x_file.close()
+			x_vals.write('x['+str(val)+'],'+str(x_dict[val].x)+'\n')
+		x_vals.close()'''
+
+		'''v_file = open('v_file.tsv', 'w')
+		v_file.write('Sample\tDistance\tSource\tValues\n')
+		for i in range(len(G)):
+			for d in list(v_set[i].keys()):
+				v_file.write(str(i)+'\t'+str(d)+'\t'+str(src[i])+'\t'+str(v_set[i][d])+'\n')
+		v_file.close()'''
+
+
+		print(src)
 
 		#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
 		produce_plot('k_values_2.csv', 'example')
