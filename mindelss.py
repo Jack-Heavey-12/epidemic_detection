@@ -300,7 +300,6 @@ if __name__ == '__main__':
 		v_file.close()'''
 
 
-		print(src)
 
 		#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
 		produce_plot('k_values_2.csv', 'example')
