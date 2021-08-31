@@ -21,7 +21,7 @@ def rounding(x, n, big_n):
 	limit = np.random.uniform(0,1)
 
 	#just a slightly cleaner way of doing the math, the other way should have still worked, though
-	if limit <= np,min([1, x*d]):
+	if limit <= np.min([1, x*d]):
 		return 1
 	return 0
 
@@ -187,18 +187,24 @@ def produce_plot(input_name, output_string):
 
 	df['Percent'] = df['Rounded X Value'] / df['Value of K']
 
-	fig = plt.plot(df['Value of K'], df['Value of K'], color='r')
+	fig = plt.plot(df['Value of K'], df['Value of K'], color='r', marker='o')
 
-	plt.plot(df['Value of K'], df['Rounded X Value'], color='b')
+	plt.plot(df['Value of K'], df['Rounded X Value'], color='b', marker='o')
 	plt.legend(['Value of Budget K', 'Size of Selected Set S_r'])
 	plt.title('Violation of Budget Constraints')
 
 	plt.savefig(output_string + '.png')
 	plt.clf()
 
-	fig2 = plt.plot(df['Value of K'], df['Percent'])
+	fig2 = plt.plot(df['Value of K'], df['Percent'], 'o')
 	plt.title('Violation of K as a Percentage of K')
 	plt.savefig(output_string +'_percent.png')
+	plt.clf()
+
+
+	fig3 = plt.plot(df['Rounded X Value'], df['new_objVal'], color='m', marker='o')
+	plt.title('Size of Sensor Set vs. Rounded Mean Detection Time')
+	plt.savefig(output_string + '_objvK.png')
 	plt.clf()
 
 
@@ -220,7 +226,7 @@ if __name__ == '__main__':
 	
 	#Change probability of transmission here
 	#Used to determine the probability of a given edge being sampled
-	p = 0.2
+	p = 0.1
 
 	#Change allowable infection rate here
 	alpha = 0.3
@@ -237,10 +243,32 @@ if __name__ == '__main__':
 
 	#theoretical physics collaboration network
 	#8638 nodes, 24827 edges
-	H_prime = nx.read_adjlist('arxiv_collab_network.txt')
-	H = H_prime.subgraph(max(nx.connected_components(H_prime))).copy()
-	del H_prime
+	#H_prime = nx.read_adjlist('arxiv_collab_network.txt')
+	#H = H_prime.subgraph(max(nx.connected_components(H_prime))).copy()
+	#del H_prime
 	
+	#UVA Hospital Network, 30 weeks from end. 9949 nodes, 399495 edges
+	network = open('personnetwork_post', 'r')
+	lines = network.readlines()
+	lst = []
+	for line in lines:
+		lst.append(line.strip())
+	network.close()
+	H = nx.parse_edgelist(lst)
+	del lst
+
+	#UVA hospital Network, 30 weeks from beginning (skipping to at least time 10,000). 10789 nodes, 291881 edges
+	#network = open('personnetwork_exp', 'r')
+	#lines = network.readlines()
+	#lst = []
+	#for line in lines:
+	#	lst.append(line.strip())
+	#network.close()
+	#H = nx.parse_edgelist(lst)
+	#del lst
+
+
+
 	nodes = len(H.nodes()) #small n
 
 	k_arr = []
@@ -251,11 +279,11 @@ if __name__ == '__main__':
 
 	#prob_lst = [.001, .005, .01, .03, .05, .1, .15, .2, .25, .3, .35, .4]
 
-	for i in range(5, 55, 5):
+	for i in range(25, 275, 25):
 	#for i in prob_lst:
 		num_samples = 2500
-		#k = i #VALUE_FOR_K
-		k = np.floor(i * nodes)
+		k = i #VALUE_FOR_K
+		#k = np.floor((i/1000) * nodes)
 		#p = i
 		G = sampling(num_samples, H, p)
 
@@ -271,7 +299,7 @@ if __name__ == '__main__':
 		obj_val_lst.append(obj_val)
 
 
-		textfile = open('k_values_2.csv', 'w')
+		textfile = open('k_values_post_p15.csv', 'w')
 		textfile.write('Value of K,Rounded X Value,objVal,new_objVal,Number of Infections (mean)\n')
 		for val in range(len(k_arr)):
 			textfile.write(str(k_arr[val])+','+str(x_prime_dict_arr[val])+','+str(obj_val_lst[val])+
@@ -285,11 +313,11 @@ if __name__ == '__main__':
 			y_file.write(str(val)+','+str(y_vals[val].x)+'\n')
 		y_file.close()'''
 
-		'''x_vals = open('x_vals.csv', 'w')
+		x_vals = open('x_vals_post.csv', 'w')
 		x_vals.write('Var_name,Optimized_Value\n')
 		for val in list(x_dict.keys()):
 			x_vals.write('x['+str(val)+'],'+str(x_dict[val].x)+'\n')
-		x_vals.close()'''
+		x_vals.close()
 
 		'''v_file = open('v_file.tsv', 'w')
 		v_file.write('Sample\tDistance\tSource\tValues\n')
@@ -300,8 +328,9 @@ if __name__ == '__main__':
 
 
 
-		#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
-		produce_plot('k_values_2.csv', 'example')
+	#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
+	produce_plot('k_values_post_p15.csv', 'post_covid_p15')
 
+	print('Done!')
 
 	
