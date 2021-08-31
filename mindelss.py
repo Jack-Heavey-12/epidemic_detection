@@ -279,10 +279,10 @@ if __name__ == '__main__':
 
 	#prob_lst = [.001, .005, .01, .03, .05, .1, .15, .2, .25, .3, .35, .4]
 
-	for i in range(25, 275, 25):
+	for i in range(25, 50, 25):
 	#for i in prob_lst:
 		num_samples = 2500
-		k = i #VALUE_FOR_K
+		k = 100 #VALUE_FOR_K
 		#k = np.floor((i/1000) * nodes)
 		#p = i
 		G = sampling(num_samples, H, p)
@@ -313,11 +313,11 @@ if __name__ == '__main__':
 			y_file.write(str(val)+','+str(y_vals[val].x)+'\n')
 		y_file.close()'''
 
-		x_vals = open('x_vals_post.csv', 'w')
+		'''x_vals = open('x_vals_post.csv', 'w')
 		x_vals.write('Var_name,Optimized_Value\n')
 		for val in list(x_dict.keys()):
 			x_vals.write('x['+str(val)+'],'+str(x_dict[val].x)+'\n')
-		x_vals.close()
+		x_vals.close()'''
 
 		'''v_file = open('v_file.tsv', 'w')
 		v_file.write('Sample\tDistance\tSource\tValues\n')
