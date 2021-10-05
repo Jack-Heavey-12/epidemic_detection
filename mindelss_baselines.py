@@ -241,7 +241,7 @@ def LinearProgram_baselines(H, graph, k, sources):
 				continue
 		obj_vals_random.append(shortest)
 
-	s_r_greedy = greedy(graph, int(sum(x_prime_dict.values())), src, v_set)
+	'''s_r_greedy = greedy(graph, int(sum(x_prime_dict.values())), src, v_set)
 
 	obj_vals_greedy = []
 	for i in range(M):
@@ -255,15 +255,15 @@ def LinearProgram_baselines(H, graph, k, sources):
 				continue
 		obj_vals_greedy.append(shortest)
 
-	print('Baselines Calculated')
+	print('Baselines Calculated')'''
 
 
 
 	#Return stuff here, so want to calculate everything first so that we can return everything with just one function call
 
 
-	return np.mean(obj_vals), np.mean(obj_vals_degree), np.mean(obj_vals_random), np.mean(obj_vals_greedy), x_prime_dict, degree_set, random_nodes, s_r_greedy
-
+	#return np.mean(obj_vals), np.mean(obj_vals_degree), np.mean(obj_vals_random), np.mean(obj_vals_greedy), x_prime_dict, degree_set, random_nodes, #s_r_greedy
+	return np.mean(obj_vals), np.mean(obj_vals_degree), np.mean(obj_vals_random), x_prime_dict, degree_set, random_nodes, #s_r_greedy
 
 #Function for sampling edges with probability p. Will return a list of sample graphs.
 def sampling(num_samples, graph, p):
@@ -414,7 +414,8 @@ if __name__ == '__main__':
 		
 
 		#UPDATE - Deleted LIST_OF_SOURCES as an argument, defined in function randomly.
-		obj_val_rounded, obj_val_degree, obj_val_random, obj_val_greedy, x_prime_dict, degree_set, random_nodes, s_r_greedy = LinearProgram_baselines(H, G, k, sources)
+		#obj_val_rounded, obj_val_degree, obj_val_random, obj_val_greedy, x_prime_dict, degree_set, random_nodes, s_r_greedy = LinearProgram_baselines(H, G, k, sources)
+		obj_val_rounded, obj_val_degree, obj_val_random, x_prime_dict, degree_set, random_nodes = LinearProgram_baselines(H, G, k, sources)
 
 
 		#NEED TO EVALUATE THIS WRITE STATEMENT BELOW HERE
@@ -422,7 +423,7 @@ if __name__ == '__main__':
 		obj_val_lst.append(obj_val_rounded)
 		obj_val_degree_lst.append(obj_val_degree)
 		obj_val_random_lst.append(obj_val_random)
-		obj_val_greedy_lst.append(obj_val_greedy)
+		#obj_val_greedy_lst.append(obj_val_greedy)
 
 
 
@@ -431,8 +432,10 @@ if __name__ == '__main__':
 		textfile = open('baselines_files_5/final_output_speedy.csv', 'w')
 		textfile.write('Value of K,Rounded Obj Value,Degree Obj Value,Random Obj Value,Greedy Obj Val\n')
 		for val in range(len(k_arr)):
+			#textfile.write(str(k_arr[val])+','+str(obj_val_lst[val])+','+str(obj_val_degree_lst[val])+
+			#	','+str(obj_val_random_lst[val])+','+str(obj_val_greedy_lst[val])+'\n')
 			textfile.write(str(k_arr[val])+','+str(obj_val_lst[val])+','+str(obj_val_degree_lst[val])+
-				','+str(obj_val_random_lst[val])+','+str(obj_val_greedy_lst[val])+'\n')
+				','+str(obj_val_random_lst[val])+'\n')
 		textfile.close()
 
 		x_vals = open('baselines_files_5/x_values/x_vals_post_'+str(i)+'.csv', 'w')
@@ -447,10 +450,10 @@ if __name__ == '__main__':
 				x_vals.write(',1\n')
 			else:
 				x_vals.write(',0\n') 
-			if val in s_r_greedy:
+			'''if val in s_r_greedy:
 				x_vals.write(',1\n')
 			else:
-				x_vals.write(',0\n')
+				x_vals.write(',0\n')'''
 		x_vals.close()
 
 
@@ -472,6 +475,10 @@ if __name__ == '__main__':
 
 	for i in range(len(G)):
 		nx.write_edgelist(G[i], 'baselines_files_5/graphs/sample_graph_'+str(i))
+
+	source_file = open('baselines_files_5/sources', 'w')
+	for i in range(len(sources)):
+		source_file.write(str(sources[i])+'\n')
 
 	#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
 	#produce_plot('k_values_post_p15.csv', 'post_covid_p15')
