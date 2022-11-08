@@ -5,6 +5,7 @@ import math
 import numpy as np
 import time
 import pandas as pd
+import json
 
 
 from collections import defaultdict
@@ -30,8 +31,6 @@ def rounding(x, n, big_n):
 
 def LinearProgram(graph, k):
 	#graph is a list of sampled subgraphs, generated before being fed in here.
-	#src is a list of infection sources. They are fixed for every sample, but there can be multiple.
-	#UPDATE - This is defined later
 	#k is a fixed variable
 
 	x = {} #defined as in the paper
@@ -210,8 +209,14 @@ def produce_plot(input_name, output_string):
 
 #main function
 if __name__ == '__main__':
-	#dataset = sys.argv[1] #input the original dataset/graph name
-	outputfile = 'mindelss_output' #input the output file name
+	main = False
+	if len(sys.argv) > 1:
+		dataset = sys.argv[1] #input the original dataset/graph name
+		k = int(sys.argv[2])
+
+		main = True
+
+	outputfile = 'mindelss_output' #change the output file name here
 	
 	#G = []
 	paths = []
@@ -227,9 +232,6 @@ if __name__ == '__main__':
 	#Change probability of transmission here
 	#Used to determine the probability of a given edge being sampled
 	p = 0.1
-
-	#Change allowable infection rate here
-	alpha = 0.3
 
 
 
@@ -248,16 +250,18 @@ if __name__ == '__main__':
 	#del H_prime
 	
 	#UVA Hospital Network, 30 weeks from end. 9949 nodes, 399495 edges
-	network = open('personnetwork_post', 'r')
-	lines = network.readlines()
-	lst = []
-	for line in lines:
-		lst.append(line.strip())
-	network.close()
-	H = nx.parse_edgelist(lst)
-	del lst
+	#NOTE: Data set is not publically available
+	#network = open('personnetwork_post', 'r')
+	#lines = network.readlines()
+	#lst = []
+	#for line in lines:
+	#	lst.append(line.strip())
+	#network.close()
+	#H = nx.parse_edgelist(lst)
+	#del lst
 
 	#UVA hospital Network, 30 weeks from beginning (skipping to at least time 10,000). 10789 nodes, 291881 edges
+	#NOTE: Data set is not publically available
 	#network = open('personnetwork_exp', 'r')
 	#lines = network.readlines()
 	#lst = []
@@ -278,58 +282,70 @@ if __name__ == '__main__':
 	new_obj_val_lst = []
 
 	#prob_lst = [.001, .005, .01, .03, .05, .1, .15, .2, .25, .3, .35, .4]
-
-	for i in range(25, 50, 25):
-	#for i in prob_lst:
+	if not main:
 		num_samples = 2500
-		k = 100 #VALUE_FOR_K
-		#k = np.floor((i/1000) * nodes)
-		#p = i
+		H = nx.parse_edgelist(dataset)
 		G = sampling(num_samples, H, p)
 
-		#UPDATE - Deleted LIST_OF_SOURCES as an argument, defined in function randomly.
 		model, obj_val, x_dict, x_prime_dict, inf_list, new_obj_val, y_vals, src, v_set = LinearProgram(G, k)
 
-
-		#NEED TO EVALUATE THIS WRITE STATEMENT BELOW HERE
-		k_arr.append(k)
-		x_prime_dict_arr.append(sum(x_prime_dict.values()))
-		inf_list_lst.append(inf_list)
-		new_obj_val_lst.append(new_obj_val)
-		obj_val_lst.append(obj_val)
+		with open(f'{outputfile}.json', 'w') as outfile:
+    		json.dump(x_prime_dict, outfile)
 
 
-		textfile = open('k_values_post_p15.csv', 'w')
-		textfile.write('Value of K,Rounded X Value,objVal,new_objVal,Number of Infections (mean)\n')
-		for val in range(len(k_arr)):
-			textfile.write(str(k_arr[val])+','+str(x_prime_dict_arr[val])+','+str(obj_val_lst[val])+
-				','+str(new_obj_val_lst[val])+','+str(inf_list_lst[val])+'\n')
-		textfile.close()
+	else:
+		for i in range(25, 50, 25):
+		#for i in prob_lst:
+			num_samples = 2500
+			k = 100 #VALUE_FOR_K
+			#k = np.floor((i/1000) * nodes)
+			#p = i
+			G = sampling(num_samples, H, p)
+
+			#UPDATE - Deleted LIST_OF_SOURCES as an argument, defined in function randomly.
+			model, obj_val, x_dict, x_prime_dict, inf_list, new_obj_val, y_vals, src, v_set = LinearProgram(G, k)
 
 
-		'''y_file = open('y_vals.csv', 'w')
-		y_file.write('Var_name,Optimized_Value\n')
-		for val in list(y_vals.keys()):
-			y_file.write(str(val)+','+str(y_vals[val].x)+'\n')
-		y_file.close()'''
-
-		'''x_vals = open('x_vals_post.csv', 'w')
-		x_vals.write('Var_name,Optimized_Value\n')
-		for val in list(x_dict.keys()):
-			x_vals.write('x['+str(val)+'],'+str(x_dict[val].x)+'\n')
-		x_vals.close()'''
-
-		'''v_file = open('v_file.tsv', 'w')
-		v_file.write('Sample\tDistance\tSource\tValues\n')
-		for i in range(len(G)):
-			for d in list(v_set[i].keys()):
-				v_file.write(str(i)+'\t'+str(d)+'\t'+str(src[i])+'\t'+str(v_set[i][d])+'\n')
-		v_file.close()'''
+			#NEED TO EVALUATE THIS WRITE STATEMENT BELOW HERE
+			k_arr.append(k)
+			x_prime_dict_arr.append(sum(x_prime_dict.values()))
+			inf_list_lst.append(inf_list)
+			new_obj_val_lst.append(new_obj_val)
+			obj_val_lst.append(obj_val)
 
 
+			textfile = open('k_values_post_p15.csv', 'w')
+			textfile.write('Value of K,Rounded X Value,objVal,new_objVal,Number of Infections (mean)\n')
+			for val in range(len(k_arr)):
+				textfile.write(str(k_arr[val])+','+str(x_prime_dict_arr[val])+','+str(obj_val_lst[val])+
+					','+str(new_obj_val_lst[val])+','+str(inf_list_lst[val])+'\n')
+			textfile.close()
 
-	#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
-	produce_plot('k_values_post_p15.csv', 'post_covid_p15')
+
+			'''y_file = open('y_vals.csv', 'w')
+			y_file.write('Var_name,Optimized_Value\n')
+			for val in list(y_vals.keys()):
+				y_file.write(str(val)+','+str(y_vals[val].x)+'\n')
+			y_file.close()'''
+
+			'''x_vals = open('x_vals_post.csv', 'w')
+			x_vals.write('Var_name,Optimized_Value\n')
+			for val in list(x_dict.keys()):
+				x_vals.write('x['+str(val)+'],'+str(x_dict[val].x)+'\n')
+			x_vals.close()'''
+
+			'''v_file = open('v_file.tsv', 'w')
+			v_file.write('Sample\tDistance\tSource\tValues\n')
+			for i in range(len(G)):
+				for d in list(v_set[i].keys()):
+					v_file.write(str(i)+'\t'+str(d)+'\t'+str(src[i])+'\t'+str(v_set[i][d])+'\n')
+			v_file.close()'''
+
+
+
+		#CAN CHANGE WHAT YOU WANT THE PLOT TO BE CALLED HERE
+		produce_plot('k_values_post_p15.csv', 'post_covid_p15')
+
 
 	print('Done!')
 
